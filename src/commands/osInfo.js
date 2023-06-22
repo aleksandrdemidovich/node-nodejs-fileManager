@@ -1,19 +1,27 @@
-import os from 'os';
+import os from "os";
 
 function handleOSCommand(args) {
-  const validArgs = ['--help', '--version', '--EOL', '--cpus', '--homedir', '--username', '--architecture'];
+  const validArgs = [
+    "--help",
+    "--version",
+    "--EOL",
+    "--cpus",
+    "--homedir",
+    "--username",
+    "--architecture",
+  ];
 
   if (!validArgs.includes(args[0])) {
-    console.log("Invalid input.\n");
+    console.log(`Invalid input (${args[0]} is invalid argument).\n`);
     return;
   }
 
-  if (args.includes('--EOL')) {
+  if (args.includes("--EOL")) {
     const eol = os.EOL;
     console.log(`End-Of-Line (EOL): ${eol}`);
   }
 
-  if (args.includes('--cpus')) {
+  if (args.includes("--cpus")) {
     const cpus = os.cpus();
     console.log(`Number of CPUs: ${cpus.length}`);
     cpus.forEach((cpu, index) => {
@@ -21,17 +29,17 @@ function handleOSCommand(args) {
     });
   }
 
-  if (args.includes('--homedir')) {
+  if (args.includes("--homedir")) {
     const homedir = os.homedir();
     console.log(`Home directory: ${homedir}`);
   }
 
-  if (args.includes('--username')) {
+  if (args.includes("--username")) {
     const username = os.userInfo().username;
     console.log(`Current system user name: ${username}`);
   }
 
-  if (args.includes('--architecture')) {
+  if (args.includes("--architecture")) {
     const architecture = os.arch();
     console.log(`CPU architecture: ${architecture}`);
   }

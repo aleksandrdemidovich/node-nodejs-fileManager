@@ -1,4 +1,6 @@
 import osInfoCommands from "./commands/osInfo.js";
+import hashCommands from "./commands/hash.js";
+import compressCommands from "./commands/compress.js";
 
 const args = process.argv.slice(2);
 const usernameArg = args.find((arg) => arg.startsWith("--username="));
@@ -21,6 +23,15 @@ function executeCommand(command) {
   switch (operation) {
     case "os":
       osInfoCommands.handleOSCommand(args);
+      break;
+    case "hash":
+      hashCommands.calculateFileHash(currentWorkingDirectory, args);
+      break;
+    case "compress":
+      compressCommands.compressFile(currentWorkingDirectory, args);
+      break;
+    case "decompress":
+      compressCommands.decompressFile(currentWorkingDirectory, args);
       break;
     case ".exit":
       exitFileManager();
