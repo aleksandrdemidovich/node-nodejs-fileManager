@@ -1,6 +1,7 @@
 import osInfoCommands from "./commands/osInfo.js";
 import hashCommands from "./commands/hash.js";
 import compressCommands from "./commands/compress.js";
+import fileOperationCommands from "./commands/fileOperations.js";
 
 const args = process.argv.slice(2);
 const usernameArg = args.find((arg) => arg.startsWith("--username="));
@@ -21,6 +22,24 @@ function executeCommand(command) {
   const [operation, ...args] = command.split(" ");
 
   switch (operation) {
+    case "cat":
+      fileOperationCommands.readFile(currentWorkingDirectory, args);
+      break;
+    case "add":
+      fileOperationCommands.createFile(currentWorkingDirectory, args);
+      break;
+    case "rn":
+      fileOperationCommands.renameFile(currentWorkingDirectory, args);
+      break;
+    case "cp":
+      fileOperationCommands.copyFile(currentWorkingDirectory, args);
+      break;
+    case "mv":
+      fileOperationCommands.moveFile(currentWorkingDirectory, args);
+      break;
+    case "rm":
+      fileOperationCommands.deleteFile(currentWorkingDirectory, args);
+      break;
     case "os":
       osInfoCommands.handleOSCommand(args);
       break;
