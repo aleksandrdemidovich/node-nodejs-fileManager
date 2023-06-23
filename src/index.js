@@ -45,6 +45,9 @@ function exitFileManager() {
   console.log(`Thank you for using File Manager, ${username}, goodbye!`);
   process.exit(0);
 }
+process.on("SIGINT", () => {
+  exitFileManager();
+});
 
 process.stdin.resume();
 process.stdin.setEncoding("utf8");
