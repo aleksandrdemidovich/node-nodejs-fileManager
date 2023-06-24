@@ -2,6 +2,7 @@ import osInfoCommands from "./commands/osInfo.js";
 import hashCommands from "./commands/hash.js";
 import compressCommands from "./commands/compress.js";
 import fileOperationCommands from "./commands/fileOperations.js";
+import navigationCommands from "./commands/navigation.js";
 
 const args = process.argv.slice(2);
 const usernameArg = args.find((arg) => arg.startsWith("--username="));
@@ -18,10 +19,24 @@ process.stdin.on("data", (userInput) => {
   executeCommand(command);
 });
 
-function executeCommand(command) {
+async function executeCommand(command) {
   const [operation, ...args] = command.split(" ");
 
   switch (operation) {
+    case "up":
+      currentWorkingDirectory = navigationCommands.goUp(
+        currentWorkingDirectory
+      );
+      break;
+    case "cd":
+      currentWorkingDirectory = await navigationCommands.goToDirectory(
+        currentWorkingDirectory,
+        args
+      );
+      break;
+    case "ls":
+      navigationCommands.listFilesAndFolders(currentWorkingDirectory);
+      break;
     case "cat":
       fileOperationCommands.readFile(currentWorkingDirectory, args);
       break;
