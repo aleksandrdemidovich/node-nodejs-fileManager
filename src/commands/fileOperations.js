@@ -1,7 +1,9 @@
 import { promises as fs, createReadStream, createWriteStream } from "fs";
 import { fileExists } from "../utils/fileUtils.js";
 import { getAbsolutePath } from "../utils/pathUtils.js";
+import { directoryExists } from "../utils/directoryUtils.js";
 import errors from "../utils/errors.js";
+import path from "path";
 
 async function readFile(currentWorkingDirectory, args) {
   if (args.length < 1) {
@@ -18,8 +20,17 @@ async function readFile(currentWorkingDirectory, args) {
   }
 
   try {
-    const data = await fs.readFile(absolutePath, { encoding: "utf-8" });
-    console.log(data);
+    const readableStream = createReadStream(absolutePath, {
+      encoding: "utf-8",
+    });
+
+    readableStream.on("data", (chunk) => {
+      console.log(chunk);
+    });
+
+    readableStream.on("error", (error) => {
+      console.log(errors.operationFailed);
+    });
   } catch (err) {
     console.log(err);
   }
@@ -72,6 +83,7 @@ async function renameFile(currentWorkingDirectory, args) {
     console.log("File renamed successfully.");
   } catch (err) {
     console.log(err);
+    console.log(errors.executionError);
   }
 }
 
@@ -82,14 +94,14 @@ async function copyFile(currentWorkingDirectory, args) {
   }
 
   const sourceFilePath = args[0];
-  const destinationFilePath = args[1];
+  const destinationFolderName = args[1];
   const absoluteSourcePath = getAbsolutePath(
     currentWorkingDirectory,
     sourceFilePath
   );
   const absoluteDestinationPath = getAbsolutePath(
     currentWorkingDirectory,
-    destinationFilePath
+    destinationFolderName
   );
 
   if (!(await fileExists(absoluteSourcePath))) {
@@ -97,16 +109,27 @@ async function copyFile(currentWorkingDirectory, args) {
     return;
   }
 
-  if (await fileExists(absoluteDestinationPath)) {
+  if (!(await directoryExists(absoluteDestinationPath))) {
+    console.log(errors.directoryNotFound);
+    return;
+  }
+
+  const sourceFileName = path.basename(absoluteSourcePath);
+  const absoluteDestinationFilePath = path.join(
+    absoluteDestinationPath,
+    sourceFileName
+  );
+
+  if (await fileExists(absoluteDestinationFilePath)) {
     console.log(errors.fileExists);
     return;
   }
 
   const sourceStream = createReadStream(absoluteSourcePath);
-  const destinationStream = createWriteStream(absoluteDestinationPath);
+  const destinationStream = createWriteStream(absoluteDestinationFilePath);
 
   destinationStream.on("error", (error) => {
-    console.log("Error writing to destination file:", error);
+    console.log(errors.executionError, error);
   });
 
   destinationStream.on("close", () => {
@@ -123,14 +146,14 @@ async function moveFile(currentWorkingDirectory, args) {
   }
 
   const sourceFilePath = args[0];
-  const destinationFilePath = args[1];
+  const destinationFolderPath = args[1];
   const absoluteSourcePath = getAbsolutePath(
     currentWorkingDirectory,
     sourceFilePath
   );
-  const absoluteDestinationPath = getAbsolutePath(
+  const absoluteDestinationFolderPath = getAbsolutePath(
     currentWorkingDirectory,
-    destinationFilePath
+    destinationFolderPath
   );
 
   if (!(await fileExists(absoluteSourcePath))) {
@@ -138,24 +161,23 @@ async function moveFile(currentWorkingDirectory, args) {
     return;
   }
 
-  if (await fileExists(absoluteDestinationPath)) {
-    console.log(errors.fileExists);
+  if (!(await directoryExists(absoluteDestinationFolderPath))) {
+    console.log(errors.directoryNotFound);
     return;
   }
 
-  const sourceStream = createReadStream(absoluteSourcePath);
-  const destinationStream = createWriteStream(absoluteDestinationPath);
+  const destinationFileName = path.basename(absoluteSourcePath);
+  const absoluteDestinationPath = path.join(
+    absoluteDestinationFolderPath,
+    destinationFileName
+  );
 
-  destinationStream.on("error", (error) => {
-    console.log("Error writing to destination file:", error);
-  });
-
-  destinationStream.on("close", async () => {
-    await fs.unlink(absoluteSourcePath);
-    console.log("File moved successfully.");
-  });
-
-  sourceStream.pipe(destinationStream);
+  try {
+    await fs.rename(absoluteSourcePath, absoluteDestinationPath);
+    console.log('File moved successfully.');
+  } catch (err) {
+    console.log(errors.executionError, err);
+  }
 }
 
 async function deleteFile(currentWorkingDirectory, args) {
@@ -172,8 +194,13 @@ async function deleteFile(currentWorkingDirectory, args) {
     return;
   }
 
-  await fs.unlink(absolutePath);
-  console.log("File deleted successfully.");
+  try {
+    await fs.unlink(absolutePath);
+    console.log("File deleted successfully.");
+  } catch (err) {
+    console.log(errors.executionError, err);
+  }
+  
 }
 
 export default {

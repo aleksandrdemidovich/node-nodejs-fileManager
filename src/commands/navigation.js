@@ -33,10 +33,28 @@ async function goToDirectory(currentWorkingDirectory, directoryPath) {
 async function listFilesAndFolders(currentWorkingDirectory) {
   const filesAndFolders = await fs.readdir(currentWorkingDirectory);
   const sortedfilesAndDirs = sortAlphabetically(filesAndFolders);
+  const directories = [];
+  const files = [];
   const tableData = [];
 
   for (let i = 0; i < sortedfilesAndDirs.length; i++) {
     const item = sortedfilesAndDirs[i];
+    const itemPath = path.join(currentWorkingDirectory, item);
+    const itemType = await getFileType(itemPath);
+
+    if (itemType === "directory") {
+      directories.push(item);
+    } else {
+      files.push(item);
+    }
+  }
+  directories.sort((a, b) => a.localeCompare(b));
+  files.sort((a, b) => a.localeCompare(b));
+
+  const sortedFilesAndDirs = directories.concat(files);
+
+  for (let i = 0; i < sortedFilesAndDirs.length; i++) {
+    const item = sortedFilesAndDirs[i];
     const itemPath = path.join(currentWorkingDirectory, item);
     const itemType = await getFileType(itemPath);
 

@@ -1,4 +1,5 @@
 import os from "os";
+import errors from "../utils/errors.js";
 
 function handleOSCommand(args) {
   const validArgs = [
@@ -12,7 +13,7 @@ function handleOSCommand(args) {
   ];
 
   if (!validArgs.includes(args[0])) {
-    console.log(`Invalid input (${args[0]} is invalid argument).\n`);
+    console.log(errors.invalidInput);
     return;
   }
 
